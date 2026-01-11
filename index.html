@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" href="./resources/ol.css">
+    <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
+    <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
+    <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+    <link rel="stylesheet" href="./resources/qgis2web.css">
+    <style>
+        html, body {
+            background-color: #ffffff;
+        }
+
+        .ol-control > * {
+            background-color: #f8f8f8 !important;
+            color: #444444 !important;
+            border-radius: 0px;
+        }
+
+        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
+            color: #444444 !important;
+        }
+
+        .search-layer-input-search {
+            background-color: #f8f8f8 !important;
+        }
+
+        .ol-control > *:focus, .ol-control > *:hover {
+            background-color: rgba(248, 248, 248, 0.7) !important;
+        }
+
+        .ol-control {
+            background-color: rgba(255,255,255,.4) !important;
+            padding: 2px !important;
+        }
+    </style>
+
+    <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <title>青岛市道路地图</title>
+</head>
+<body>
+    <h2 style="position:absolute; top:10px; left:30%; transform:translateX(-50%);
+background-color:white; padding:10px 15px; border:1px solid #ccc;
+font-family: Arial, sans-serif; font-size:28px; font-weight:bold;
+text-align:center; z-index:1000;">
+        青岛城市主要道路地图
+    </h2>
+
+    <div id="objective" style="
+position:absolute; top:240px; right:10px; width:220px;
+background:#fff; padding:12px; border:1px solid #ccc;
+font-family:Arial, sans-serif; font-size:16px; line-height:1.6;
+z-index:1000;">
+        <strong style="font-size:18px;">研究目的:</strong><br>
+        探究青岛城市内各区域主要交通道路的空间变化特征和分布规律.<br><br>
+        <strong style="font-size:18px;">研究目标:</strong><br>
+        <ol style="margin:5px 0 0 20px; padding:0;">
+            <li>
+                可视化青岛市各街道主要交通道路的空间分布
+            </li>
+            <li>探究青岛各街道区域面积大小和主要城市道路分布的关联</li>
+            <li>探究青岛各街道地理位置分布和建设主要交通道路的需求</li>
+            <li>分析主要交通道路在城市中的分布规律</li>
+        </ol>
+    </div>
+    <div id="map">
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content"></div>
+        </div>
+    </div>
+    <script src="resources/qgis2web_expressions.js"></script>
+    <script src="resources/proj4.js"></script>
+    <script>proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');</script>
+    <script src="./resources/functions.js"></script>
+    <script src="./resources/ol.js"></script>
+    <script src="resources/horsey.min.js"></script>
+    <script src="resources/ol-search-layer.js"></script>
+    <script src="./resources/ol-layerswitcher.js"></script>
+    <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+    <script src="layers/qing_dao_1.js"></script>
+    <script src="layers/road_2.js"></script>
+    <script src="styles/qing_dao_1_style.js"></script>
+    <script src="styles/road_2_style.js"></script>
+    <script src="./layers/layers.js" type="text/javascript"></script>
+    <script src="./resources/Autolinker.min.js"></script>
+    <script src="./resources/qgis2web.js"></script>
+</body>
+</html>
