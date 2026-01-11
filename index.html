@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- 引入基础资源 -->
     <link rel="stylesheet" href="./resources/ol.css">
     <link rel="stylesheet" href="resources/fontawesome-all.min.css">
     <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
@@ -13,76 +14,301 @@
     <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
     <link rel="stylesheet" href="./resources/qgis2web.css">
-    <style>
-        html, body {
-            background-color: #ffffff;
-        }
-
-        .ol-control > * {
-            background-color: #f8f8f8 !important;
-            color: #444444 !important;
-            border-radius: 0px;
-        }
-
-        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
-            color: #444444 !important;
-        }
-
-        .search-layer-input-search {
-            background-color: #f8f8f8 !important;
-        }
-
-        .ol-control > *:focus, .ol-control > *:hover {
-            background-color: rgba(248, 248, 248, 0.7) !important;
-        }
-
-        .ol-control {
-            background-color: rgba(255,255,255,.4) !important;
-            padding: 2px !important;
-        }
-    </style>
 
     <style>
+        /* 全局字体与过渡 */
+        body {
+            font-family: "Microsoft Yahei", "Segoe UI", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            transition: all 0.3s ease;
+        }
+
+        /* 地图容器全屏 */
         html, body, #map {
             width: 100%;
             height: 100%;
             padding: 0;
             margin: 0;
         }
+
+        /* 标题样式 */
+        .map-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        /* ========== 右侧栏（展开/关闭 + 街道检索） ========== */
+        .sidebar-container {
+            position: absolute;
+            top: 100px;
+            right: 0;
+            width: 0;
+            height: calc(100% - 120px);
+            background: #ffffff;
+            border-radius: 10px 0 0 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            color: #3498db;
+            z-index: 1000;
+            overflow: hidden;
+            transition: width 0.3s ease;
+        }
+        .sidebar-container.open {
+            width: 280px;
+            padding: 0 18px;
+        }
+        .sidebar-toggle {
+            position: absolute;
+            top: 50%;
+            left: -36px;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 70px;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3498db;
+            font-size: 18px;
+            z-index: 1001;
+        }
+        .sidebar-toggle:hover {
+            background-color: #f8f9fa;
+        }
+        .sidebar-content {
+            width: 280px;
+            height: 100%;
+            padding: 18px 0;
+            overflow-y: auto;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        /* 街道检索模块 */
+        .search-module {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .search-module strong {
+            font-size: 17px;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .search-module select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #3498db;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .search-module button {
+            width: 100%;
+            padding: 8px 0;
+            background: #3498db;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .search-module button:hover {
+            background: #2980b9;
+        }
+        /* 研究目的内容 */
+        .objective-content strong {
+            font-size: 17px;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .objective-content ol {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+        .objective-content li {
+            margin-bottom: 6px;
+        }
+
+        /* 地图控件优化 */
+        .ol-control {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            padding: 4px !important;
+            border-radius: 6px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+            margin: 10px !important;
+        }
+        .ol-control > * {
+            background-color: #ffffff !important;
+            color: #2c3e50 !important;
+            border-radius: 4px !important;
+            border: 1px solid #e0e0e0 !important;
+        }
+        .ol-control > *:focus, .ol-control > *:hover {
+            background-color: #f8f9fa !important;
+            border-color: #c0c0c0 !important;
+        }
+
+        /* ========== 简化地图样式，减少视觉杂乱 ========== */
+        .ol-layer {
+            stroke-width: 0.5px !important; /* 边界线更细 */
+            fill-opacity: 0.1 !important;   /* 填充色更透明 */
+            stroke-opacity: 0.7 !important; /* 边界线半透明 */
+        }
+        /* 优化弹窗样式，只显示核心信息 */
+        .ol-popup {
+            min-width: 150px !important;
+            max-width: 200px !important;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        }
+        .ol-popup-content {
+            padding: 10px !important;
+            font-size: 14px !important;
+            color: #2c3e50 !important;
+        }
+
+        /* ========== 底部版权（qgis2web+QGIS+OpenStreetMap都加链接） ========== */
+        .copyright-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #3498db;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        .copyright-info a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .copyright-info a:hover {
+            text-decoration: underline;
+        }
     </style>
-    <title>青岛市道路地图</title>
+
+    <title>青岛城市主要道路地图</title>
 </head>
 <body>
-    <h2 style="position:absolute; top:10px; left:30%; transform:translateX(-50%);
-background-color:white; padding:10px 15px; border:1px solid #ccc;
-font-family: Arial, sans-serif; font-size:28px; font-weight:bold;
-text-align:center; z-index:1000;">
-        青岛城市主要道路地图
-    </h2>
+    <div class="map-title">青岛城市主要道路地图</div>
 
-    <div id="objective" style="
-position:absolute; top:240px; right:10px; width:220px;
-background:#fff; padding:12px; border:1px solid #ccc;
-font-family:Arial, sans-serif; font-size:16px; line-height:1.6;
-z-index:1000;">
-        <strong style="font-size:18px;">研究目的:</strong><br>
-        探究青岛城市内各区域主要交通道路的空间变化特征和分布规律.<br><br>
-        <strong style="font-size:18px;">研究目标:</strong><br>
-        <ol style="margin:5px 0 0 20px; padding:0;">
-            <li>
-                可视化青岛市各街道主要交通道路的空间分布
-            </li>
-            <li>探究青岛各街道区域面积大小和主要城市道路分布的关联</li>
-            <li>探究青岛各街道地理位置分布和建设主要交通道路的需求</li>
-            <li>分析主要交通道路在城市中的分布规律</li>
-        </ol>
+    <!-- 右侧栏（街道检索 + 可展开关闭） -->
+    <div class="sidebar-container" id="sidebar">
+        <div class="sidebar-toggle" id="sidebarToggle">☰</div>
+        <div class="sidebar-content">
+            <div class="search-module">
+                <strong>街道检索</strong>
+                <select id="areaSelect">
+                    <option value="all">全部区域</option>
+                    <!-- 市南区 -->
+                    <option value="中山路街道">中山路街道</option>
+                    <option value="观海路街道">观海路街道</option>
+                    <option value="八大关街道">八大关街道</option>
+                    <option value="金门路街道">金门路街道</option>
+                    <option value="珠海路街道">珠海路街道</option>
+                    <option value="湛山街道">湛山街道</option>
+                    <option value="香港中路街道">香港中路街道</option>
+                    <option value="八大湖街道">八大湖街道</option>
+                    <!-- 市北区 -->
+                    <option value="台东街道">台东街道</option>
+                    <option value="登州路街道">登州路街道</option>
+                    <option value="延安路街道">延安路街道</option>
+                    <option value="辽宁路街道">辽宁路街道</option>
+                    <option value="华阳路街道">华阳路街道</option>
+                    <option value="宁夏路街道">宁夏路街道</option>
+                    <option value="敦化路街道">敦化路街道</option>
+                    <option value="海伦路街道">海伦路街道</option>
+                    <option value="水清沟街道">水清沟街道</option>
+                    <option value="洛阳路街道">洛阳路街道</option>
+                    <!-- 李沧区 -->
+                    <option value="李村街道">李村街道</option>
+                    <option value="虎山路街道">虎山路街道</option>
+                    <option value="浮山路街道">浮山路街道</option>
+                    <option value="振华路街道">振华路街道</option>
+                    <option value="沧口街道">沧口街道</option>
+                    <option value="兴华路街道">兴华路街道</option>
+                    <option value="九水街道">九水街道</option>
+                    <!-- 崂山区 -->
+                    <option value="中韩街道">中韩街道</option>
+                    <option value="沙子口街道">沙子口街道</option>
+                    <option value="王哥庄街道">王哥庄街道</option>
+                    <option value="北宅街道">北宅街道</option>
+                    <!-- 黄岛区（西海岸新区） -->
+                    <option value="长江路街道">长江路街道</option>
+                    <option value="黄岛街道">黄岛街道</option>
+                    <option value="薛家岛街道">薛家岛街道</option>
+                    <option value="辛安街道">辛安街道</option>
+                    <option value="灵珠山街道">灵珠山街道</option>
+                    <option value="滨海街道">滨海街道</option>
+                    <!-- 城阳区 -->
+                    <option value="城阳街道">城阳街道</option>
+                    <option value="夏庄街道">夏庄街道</option>
+                    <option value="流亭街道">流亭街道</option>
+                    <option value="棘洪滩街道">棘洪滩街道</option>
+                    <option value="上马街道">上马街道</option>
+                    <!-- 即墨区 -->
+                    <option value="通济街道">通济街道</option>
+                    <option value="环秀街道">环秀街道</option>
+                    <option value="龙山街道">龙山街道</option>
+                    <option value="潮海街道">潮海街道</option>
+                    <option value="北安街道">北安街道</option>
+                </select>
+                <button id="searchBtn">定位到所选街道</button>
+            </div>
+            <div class="objective-content">
+                <strong>研究目的:</strong>
+                探究青岛城市内各区域主要交通道路的空间变化特征和分布规律。
+                <br><br>
+                <strong>研究目标:</strong>
+                <ol>
+                    <li>可视化青岛市各街道主要交通道路的空间分布</li>
+                    <li>探究青岛各街道区域面积大小和主要城市道路分布的关联</li>
+                    <li>探究青岛各街道地理位置分布和建设主要交通道路的需求</li>
+                    <li>分析主要交通道路在城市中的分布规律</li>
+                </ol>
+            </div>
+        </div>
     </div>
+
     <div id="map">
         <div id="popup" class="ol-popup">
             <a href="#" id="popup-closer" class="ol-popup-closer"></a>
             <div id="popup-content"></div>
         </div>
     </div>
+
+    <!-- 底部版权（三个链接都生效） -->
+    <div class="copyright-info">
+        <a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a>,
+        <a href="https://www.qgis.org/zh-Hans/" target="_blank">QGIS</a>,
+        <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a>,
+        2416010130
+    </div>
+
+    <!-- 原脚本资源 -->
     <script src="resources/qgis2web_expressions.js"></script>
     <script src="resources/proj4.js"></script>
     <script>proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');</script>
@@ -99,5 +325,153 @@ z-index:1000;">
     <script src="./layers/layers.js" type="text/javascript"></script>
     <script src="./resources/Autolinker.min.js"></script>
     <script src="./resources/qgis2web.js"></script>
+
+    <!-- 功能JS（右侧栏开关 + 街道检索定位 + 数据杂乱优化） -->
+    <script>
+        let mapInstance = null;
+        let areaLayer = null; // 改为通用名，兼容街道/区级图层
+
+        // 1. 右侧栏展开/关闭
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('open');
+            this.innerHTML = sidebar.classList.contains('open') ? '✕' : '☰';
+        });
+        window.addEventListener('load', function() {
+            sidebar.classList.add('open');
+            sidebarToggle.innerHTML = '✕';
+        });
+
+        // 2. 初始化地图和图层 + 过滤冗余要素（排除平度市等非目标区域）
+        function initMapAndLayers() {
+            if (!window.map) {
+                setTimeout(initMapAndLayers, 500);
+                return;
+            }
+            mapInstance = window.map;
+            
+            // 获取包含街道数据的图层（根据你的图层名称调整匹配关键词）
+            mapInstance.getLayers().forEach(layer => {
+                const layerName = layer.get('name') || layer.get('title') || '';
+                if (layerName.includes('qing_dao') || layerName.includes('青岛') || layerName.includes('街道')) {
+                    areaLayer = layer;
+                    
+                    // 过滤冗余要素：排除非青岛市区的要素
+                    const source = areaLayer.getSource();
+                    const allFeatures = source.getFeatures();
+                    const filteredFeatures = allFeatures.filter(feature => {
+                        const name = feature.get('name') || feature.get('street_name') || feature.get('name:zh') || '';
+                        // 排除的关键词，根据你的数据调整
+                        const excludeKeywords = ['平度市', '胶州市', '莱西市'];
+                        return !excludeKeywords.some(keyword => name.includes(keyword));
+                    });
+                    // 清空原图层，只保留过滤后的要素
+                    source.clear();
+                    source.addFeatures(filteredFeatures);
+
+                    // 重写弹窗逻辑，只显示街道名称（隐藏冗余字段）
+                    rewritePopupLogic();
+                }
+            });
+        }
+        initMapAndLayers();
+
+        // 3. 重写弹窗逻辑，只显示核心的街道名称
+        function rewritePopupLogic() {
+            const popup = document.getElementById('popup');
+            const popupContent = document.getElementById('popup-content');
+            const popupCloser = document.getElementById('popup-closer');
+            const olPopup = new ol.Overlay({
+                element: popup,
+                autoPan: true,
+                autoPanAnimation: {
+                    duration: 250
+                }
+            });
+            mapInstance.addOverlay(olPopup);
+
+            // 关闭弹窗
+            popupCloser.onclick = function() {
+                olPopup.setPosition(undefined);
+                popupCloser.blur();
+                return false;
+            };
+
+            // 点击地图要素时，只显示街道名称
+            mapInstance.on('singleclick', function(evt) {
+                const coordinate = evt.coordinate;
+                const feature = mapInstance.forEachFeatureAtPixel(evt.pixel, function(feature) {
+                    return feature;
+                });
+
+                if (feature) {
+                    // 只提取名称字段，隐藏所有冗余字段
+                    const streetName = feature.get('name') || feature.get('street_name') || feature.get('name:zh') || '未知街道';
+                    popupContent.innerHTML = `<div style="text-align:center;">
+                        <strong>街道名称：</strong>${streetName}
+                    </div>`;
+                    olPopup.setPosition(coordinate);
+                } else {
+                    olPopup.setPosition(undefined);
+                }
+            });
+
+            // 鼠标移到要素上显示指针
+            mapInstance.on('pointermove', function(evt) {
+                const pixel = mapInstance.getEventPixel(evt.originalEvent);
+                const hit = mapInstance.hasFeatureAtPixel(pixel);
+                mapInstance.getTargetElement().style.cursor = hit ? 'pointer' : '';
+            });
+        }
+
+        // 4. 街道检索定位功能
+        const areaSelect = document.getElementById('areaSelect');
+        const searchBtn = document.getElementById('searchBtn');
+        
+        searchBtn.addEventListener('click', function() {
+            const selectedStreet = areaSelect.value;
+            if (!mapInstance || !areaLayer) {
+                alert('地图或图层加载未完成，请稍等！');
+                return;
+            }
+
+            // 全部区域：定位青岛中心
+            if (selectedStreet === 'all') {
+                mapInstance.getView().setCenter(ol.proj.fromLonLat([120.33, 36.07]));
+                mapInstance.getView().setZoom(10);
+                return;
+            }
+
+            // 街道定位：匹配图层中的街道名称
+            let streetExtent = null;
+            areaLayer.getSource().forEachFeature(function(feature) {
+                // 关键：根据你的图层字段调整（如name/street_name/name:zh）
+                const name = feature.get('name') || feature.get('street_name') || feature.get('name:zh') || '';
+                if (name === selectedStreet) {
+                    streetExtent = feature.getGeometry().getExtent();
+                }
+            });
+
+            if (!streetExtent) {
+                alert(`未找到【${selectedStreet}】的地理范围，请检查图层数据！`);
+                return;
+            }
+
+            // 定位到所选街道，预留右侧栏内边距
+            mapInstance.getView().fit(streetExtent, {
+                padding: [60, 320, 20, 20],
+                maxZoom: 16 // 街道级别放大到16级，更清晰
+            });
+            alert(`已定位到【${selectedStreet}】！`);
+        });
+
+        // 回车触发检索
+        areaSelect.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+    </script>
 </body>
 </html>
